@@ -60,22 +60,24 @@ function workspaceReducer(
 export const useWorkspace = () => {
     const [blocks, dispatch] = useReducer(workspaceReducer, DEFAULT_BLOCKS)
     const [draggingId, setDraggingId] = useState<number | null>(null)
-    const [isClient, setIsClient] = useState(false)
-    const { saveBlocks, loadBlocks, clearBlocks } = useLocalStorage()
-
-    useEffect(() => {
-        setIsClient(true)
-        const savedBlocks = loadBlocks()
-        if (savedBlocks) {
-            dispatch({ type: 'SET_BLOCKS', payload: savedBlocks })
-        }
-    }, [])
+    const [isClientReady, setIsClientReady] = useState(false)
+    const { saveBlocks, loadBlocks, clearBlocks, isClient } = useLocalStorage()
 
     useEffect(() => {
         if (isClient) {
+            setIsClientReady(true)
+            const savedBlocks = loadBlocks()
+            if (savedBlocks) {
+                dispatch({ type: 'SET_BLOCKS', payload: savedBlocks })
+            }
+        }
+    }, [isClient])
+
+    useEffect(() => {
+        if (isClientReady) {
             saveBlocks(blocks)
         }
-    }, [blocks, isClient])
+    }, [blocks, isClientReady])
 
     const bringToFront = (id: number) => {
         dispatch({ type: 'BRING_TO_FRONT', id })
@@ -96,14 +98,20 @@ export const useWorkspace = () => {
         resizeRef: IResizeRef,
         position: IPosition
     ) => {
-        dispatch({
+        const width = resizeRef.width ? parseInt(resizeRef.width.toString()) : 300
+        const height = resizeRef.height ? parseInt(resizeRef.height.toString()) : 100
+
+       dispatch({
             type: 'UPDATE_SIZE',
             id,
             size: {
-                width: parseInt(resizeRef.width),
-                height: parseInt(resizeRef.height),
+                width: isNaN(width) ? 300 : width,
+                height: isNaN(height) ? 100 : height,
             },
-            position,
+            position: {
+                x: position.x ?? 0,
+                y: position.y ?? 0,
+            },
         })
     }
 

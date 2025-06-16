@@ -25,14 +25,26 @@ export const DragBlock: React.FC<IDragBlockProps> = ({
     onDelete,
 }) => {
     return (
-        <Rnd
+       <Rnd
             key={block.id}
-            size={{ width: block.width, height: block.height }}
-            position={{ x: block.x, y: block.y }}
+            size={{ 
+                width: block.width || 300, 
+                height: block.height || 100 
+            }}
+            position={{ 
+                x: block.x || 0, 
+                y: block.y || 0 
+            }}
             onDragStart={() => onDragStart(block.id)}
-            onDragStop={(_, d) => onDragStop(block.id, d)}
+            onDragStop={(_, d) => onDragStop(block.id, { x: d.x, y: d.y })}
             onResizeStop={(_, __, ref, ___, pos) =>
-                onResizeStop(block.id, ref, pos)
+                onResizeStop(block.id, {
+                    width: ref.style.width,
+                    height: ref.style.height
+                }, {
+                    x: pos.x,
+                    y: pos.y
+                })
             }
             bounds="parent"
             dragGrid={[10, 10]}
